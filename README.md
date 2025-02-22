@@ -7,8 +7,17 @@ Commandline Chat<br>
 Web Browser Chat<br>
 ![alt text](https://github.com//Xatmo980/LlamaCPP-GUI/blob/main/Web.jpg?raw=true)<br><br>
 (----------------------------------------------------------------------------------------)<br>
+(-----------------------------------------Models--------------------------------------)<br><br>
+It Downloads and Runs the Following Models<br><br>
+DeepSeek-R1-Distill-Llama-8B<br>
+DeepSeek-R1-Distill-Qwen-7B<br>
+Dolphin3.0-Llama3.1-8B<br>
+Qwen2.5-7B-Instruct-1M<br>
+gemma-2-9b-it<br>
+WizardLM-2-7B<br>
+(----------------------------------------------------------------------------------------)<br>
 (-------------------------------------troubleshooting---------------------------------)<br><br>
 If the model you downloaded does not load, try lowering the GPU Layers.<br>
 I have about an 8GB VRAM GPU soo ive noticed these values work on my gpu for two of the models<br><br>
-DeepSeek R1 Qwuen 7b  (25-29)layers<br>
+DeepSeek R1 Qwuen 7b  (25-26)layers<br>
 Dolphin3.0-Lllama3.1 8B (30-33)layers
