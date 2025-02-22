@@ -9,6 +9,6 @@ Web Browser Chat<br>
 (----------------------------------------------------------------------------------------)<br>
 (-------------------------------------troubleshooting---------------------------------)<br><br>
 If the model you downloaded does not load, try lowering the GPU Layers.<br>
-I have about 8GB VRAM GPU soo ive noticed thease values work on my gpu for two of the models<br><br>
+I have about an 8GB VRAM GPU soo ive noticed these values work on my gpu for two of the models<br><br>
 DeepSeek R1 Qwuen 7b  (25-29)layers<br>
 Dolphin3.0-Lllama3.1 8B (30-33)layers
