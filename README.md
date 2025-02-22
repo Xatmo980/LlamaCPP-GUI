@@ -19,7 +19,8 @@ WizardLM-2-7B<br>
 (-------------------------------------troubleshooting---------------------------------)<br><br>
 If the model you downloaded does not load, try lowering the GPU Layers.<br>
 I have about an 8GB VRAM GPU soo ive noticed these values work on my gpu for the models<br><br>
-DeepSeek R1 Qwuen 7b  (25-26)Layers<br>
+DeepSeek-R1-Distill-Llama-8B (25-27)Layers<br>
+DeepSeek-R1-Qwuen-7b  (25-26)Layers<br>
 Dolphin3.0-Lllama3.1 8B (30-33)Layers<br>
 Qwen2.5-7B-Instruct-1M (26)Layers<br>
 WizardLM-2-7B (26-29)Layers<br>
