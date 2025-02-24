@@ -11,6 +11,7 @@ Web Browser Chat<br>
 It Downloads and Runs the Following Models<br><br>
 DeepSeek-R1-Distill-Llama-8B<br>
 DeepSeek-R1-Distill-Qwen-7B<br>
+llama-3.2-3b-instruct-abliterated  - New<br>
 Dolphin3.0-Llama3.1-8B<br>
 Qwen2.5-7B-Instruct-1M<br>
 gemma-2-9b-it<br>
