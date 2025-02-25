@@ -1,5 +1,5 @@
 # LlamaCPP-GUI
-A Simple GUI Application to Download LLamaCPP Precompiled Binaries and a Few LLM Models and Run it Local<br><br>
+A Simple GUI Application to Download LLamaCPP Precompiled Binaries and a Few LLM Models and Run it Locally<br><br>
 Simple GUI Interface<br>
 ![alt text](https://github.com//Xatmo980/LlamaCPP-GUI/blob/main/GUINe.jpg?raw=true)<br><br>
 Commandline Chat<br>
@@ -19,7 +19,7 @@ WizardLM-2-7B<br>
 (----------------------------------------------------------------------------------------)<br>
 (-------------------------------------troubleshooting---------------------------------)<br><br>
 If the model you downloaded does not load, try lowering the GPU Layers.<br>
-I have about an 8GB VRAM GPU soo ive noticed these values work on my gpu for the models<br><br>
+I have about an 8GB VRAM GPU, soo i've noticed these values work on my gpu for the models<br><br>
 DeepSeek-R1-Distill-Llama-8B (25-27)Layers<br>
 DeepSeek-R1-Qwuen-7b  (25-26)Layers<br>
 Dolphin3.0-Lllama3.1 8B (30-33)Layers<br>
