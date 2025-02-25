@@ -1,6 +1,8 @@
 ﻿#NoTrayIcon
 #Include cJson.ahk
-Global TopText, BottomText
+#Include Class_NvAPI.ahk
+#Persistent
+Global TopText, BottomText, DynamicMemPercent
 
 Gui, Add, DropDownList, vModd x22 y19 w280 h10 R7,DeepSeek-R1-Distill-Llama-8B-Q8_0.gguf|DeepSeek-R1-Distill-Qwen-7B-Q8_0.gguf|llama-3.2-3b-instruct-abliterated.Q8_0.gguf|Dolphin3.0-Llama3.1-8B-Q4_0.gguf|Qwen2.5-7B-Instruct-1M-Q8_0.gguf|gemma-2-9b-it-Q8_0.gguf|WizardLM-2-7B-Q8_0.gguf
 Gui, Add, GroupBox, x2 y-1 w320 h60 , Model
@@ -31,9 +33,13 @@ if !FileExist("llama-cli.exe")
     ExtractArchive(File, TopText)
     GuiControl, Enable, D1
     GuiControl, Enable, D2
+    SetTimer, DynamicMemPercent, 2000
+    ShowGPUInfo()
    }
 else
    {
+    SetTimer, DynamicMemPercent, 2000
+    ShowGPUInfo()
     GuiControl, Enable, D1
     GuiControl, Enable, D2
    }
@@ -65,20 +71,17 @@ RunModel(Browser, Cmd)
     }
  if Cmd = 1
     RunWait %comspec% /c llama-cli.exe -m %Mod% -t %CPU% -i -c 4096 -ngl %GPU% --keep -1 --prompt %Prompt%
+
 }
 
 Download(Model)
 {
+ SetTimer, DynamicMemPercent, Off
  MidUrl := SubStr(Model, 1, (Str := StrLen(Model) -10))
  MidUrl := MidUrl . "-GGUF"
  totalFileSize := GetSize(Model)
  FileSize := Round(totalFileSize/1000000)
- URL := "https://huggingface.co/lmstudio-community/" . MidUrl . "/resolve/main/" . Model
-
- If Model = llama-3.2-3b-instruct-abliterated.Q8_0.gguf
-    URL := "https://huggingface.co/mav23/Llama-3.2-3B-Instruct-abliterated-GGUF/resolve/main/llama-3.2-3b-instruct-abliterated.Q8_0.gguf"
- If Model = Dolphin3.0-Llama3.1-8B-Q4_0.gguf
-    URL := "https://huggingface.co/cognitivecomputations/Dolphin3.0-Llama3.1-8B-GGUF/resolve/main/Dolphin3.0-Llama3.1-8B-Q4_0.gguf"
+ URL := Models(Model, MidUrl)
 
     GuiControl, Show, TopText
     GuiControl, Show, BottomText
@@ -90,7 +93,8 @@ Download(Model)
         GuiControl,, TopText, Please wait while downloading
 	UrlDownloadToFile % URL, % A_WorkingDir . "\" . Model
 	SetTimer, uProgress, off
-        StartupHideDLBar(TopText, BottomText, DownloadBar)
+        ;StartupHideDLBar(TopText, BottomText, DownloadBar)
+        SetTimer, DynamicMemPercent, On
     
   uProgress:
 	FileGetSize, fs, % A_WorkingDir . "\" . Model
@@ -104,6 +108,18 @@ Download(Model)
         GuiControl,, DownloadBar, %b%
         GuiControl,, BottomText, %b%`% done (%f% MB of %FileSize% MB)
         Return
+}
+
+Models(Model, MidUrl)
+{
+URL := "https://huggingface.co/lmstudio-community/" . MidUrl . "/resolve/main/" . Model
+
+If Model = llama-3.2-3b-instruct-abliterated.Q8_0.gguf
+    URL := "https://huggingface.co/mav23/Llama-3.2-3B-Instruct-abliterated-GGUF/resolve/main/llama-3.2-3b-instruct-abliterated.Q8_0.gguf"
+ If Model = Dolphin3.0-Llama3.1-8B-Q4_0.gguf
+    URL := "https://huggingface.co/cognitivecomputations/Dolphin3.0-Llama3.1-8B-GGUF/resolve/main/Dolphin3.0-Llama3.1-8B-Q4_0.gguf"
+
+return URL
 }
 
 GetSize(Model)
@@ -135,6 +151,7 @@ Return Size
 
 GetLLamaCPP()
 {
+ CudaVer := GetGPUMemP(P, C := 1)
  URL := "https://api.github.com/repos/ggml-org/llama.cpp/releases?page=1"
  Data := Connect(URL, Method := "GET", PostData)
  obj := cJson.Loads(Data)
@@ -151,19 +168,33 @@ GetLLamaCPP()
  for k,v in Data[N].assets
      {
       AssName := Data[N].assets[I].name
-      If AssName = cudart-llama-bin-win-cu11.7-x64.zip
-         Size := Data[N].assets[I].size
+      If CudaVer = 12.4
+         {
+          If AssName = cudart-llama-bin-win-cu12.4-x64.zip
+             Size := Data[N].assets[I].size
+         }
+      else
+        {
+         If AssName = cudart-llama-bin-win-cu11.7-x64.zip
+            Size := Data[N].assets[I].size
+        }
       I++
       }
+ If CudaVer = 12.4
+    Source := "https://github.com/ggml-org/llama.cpp/releases/download/" . Tag . "/cudart-llama-bin-win-cu12.4-x64.zip"
+ else
+    Source := "https://github.com/ggml-org/llama.cpp/releases/download/" . Tag . "/cudart-llama-bin-win-cu11.7-x64.zip"
 
- Source := "https://github.com/ggml-org/llama.cpp/releases/download/" . Tag . "/cudart-llama-bin-win-cu11.7-x64.zip"
  DownloadLLama(Source, Size)
-
-return "cudart-llama-bin-win-cu11.7-x64.zip"
+If CudaVer = 12.4
+   return "cudart-llama-bin-win-cu12.4-x64.zip"
+else
+   return "cudart-llama-bin-win-cu11.7-x64.zip"
 }
 
 GetLLamaCPPCuda()
 {
+ CudaVer := GetGPUMemP(P, C := 1)
  URL := "https://api.github.com/repos/ggml-org/llama.cpp/releases?page=1"
  Data := Connect(URL, Method := "GET", PostData)
  obj := cJson.Loads(Data)
@@ -180,12 +211,24 @@ GetLLamaCPPCuda()
 for k,v in Data[N].assets
      {
       AssName := Data[N].assets[I].name
-      If AssName = llama-%Tag%-bin-win-cuda-cu11.7-x64.zip
-         Size := Data[N].assets[I].size
+      If CudaVer = 12.4
+        {
+         If AssName = llama-%Tag%-bin-win-cuda-cu12.4-x64.zip
+            Size := Data[N].assets[I].size
+        }
+      else
+       {
+        If AssName = llama-%Tag%-bin-win-cuda-cu11.7-x64.zip
+           Size := Data[N].assets[I].size
+       }
       I++
       }
 
- Source := "https://github.com/ggml-org/llama.cpp/releases/download/" . Tag . "/llama-" . Tag . "-bin-win-cuda-cu11.7-x64.zip"
+If CudaVer = 12.4
+   Source := "https://github.com/ggml-org/llama.cpp/releases/download/" . Tag . "/llama-" . Tag . "-bin-win-cuda-cu12.4-x64.zip"
+else
+   Source := "https://github.com/ggml-org/llama.cpp/releases/download/" . Tag . "/llama-" . Tag . "-bin-win-cuda-cu11.7-x64.zip"
+
  DownloadLLama(Source, Size)
  Exe := StrSplit(Source, "/")
  ZipName := Exe[9]
@@ -254,6 +297,70 @@ ExtractArchive(File, TopText)
  GuiControl, Hide, BottomText
 }
 
+GetGPUMemP(P, C)
+{
+ MEM := RunWaitOne("nvidia-smi -q -d MEMORY")
+ Loop, parse, MEM, `n, `r
+ {
+  if A_Index = 6
+    {
+     CVer := StrSplit(A_LoopField, ":")
+     CVer := CVer[2]
+    }
+  if A_Index = 11
+    {
+     Total := StrSplit(A_LoopField, ":")
+     Total := Total[2]
+     Total := SubStr(Total, 1, (Str := StrLen(Total) -4))
+    }
+  if A_Index = 13
+    {
+     Used := StrSplit(A_LoopField, ":")
+     Used := Used[2]
+     Used := SubStr(Used, 1, (Str := StrLen(Used) -4))
+    }
+ }
+ PUsed := round(Used / Total * 100, 2) . "%"
+
+ If P = 1
+    return PUsed
+ If C = 1
+    return CVer
+}
+
+RunWaitOne(command) {
+  DetectHiddenWindows On
+  Run %ComSpec%,, Hide, pid
+  WinWait ahk_pid %pid%
+  DllCall("AttachConsole", "UInt", pid)
+
+  shell := ComObjCreate("WScript.Shell")
+  exec := shell.Exec(ComSpec " /C " command)
+  Info := exec.StdOut.ReadAll()
+  DllCall("FreeConsole")
+  Process, Close, %pid%
+  return Info
+}
+
+ShowGPUInfo()
+{
+ GuiControl, Show, TopText
+ GuiControl, Show, BottomText
+ GuiControl, Show, DownloadBar
+ Cuda := GetGPUMemP(P, C := 1)
+ GuiControl,, TopText, % "Cuda Version: " . Cuda
+}
+
+DynamicMemPercent()
+{
+ PMem := Round((NvAPI.GPU_GetMemoryInfo().dedicatedVideoMemory - NvAPI.GPU_GetMemoryInfo().curAvailableDedicatedVideoMemory) / NvAPI.GPU_GetMemoryInfo().dedicatedVideoMemory * 100, 2)
+ TotalMem := NvAPI.GPU_GetMemoryInfo().dedicatedVideoMemory
+ FreeMem := NvAPI.GPU_GetMemoryInfo().curAvailableDedicatedVideoMemory
+ FreeMem := TotalMem - FreeMem
+ 
+ GuiControl,, BottomText, % "GPU Mem Load: " . PMem . " (" . round(FreeMem / 1000, 2) . "/" . round(TotalMem / 1000, 2) . ")"
+ GuiControl,, DownloadBar, %PMem%
+}
 
 GuiClose:
 ExitApp
