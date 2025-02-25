@@ -12,14 +12,18 @@ Gui, Add, GroupBox, x2 y149 w210 h70 , Browser Interface
 Gui, Add, Button, gRunBrow vD1 x22 y169 w170 h30 , Run
 Gui, Add, GroupBox, x2 y219 w420 h60 , Info
 Gui, Add, GroupBox, x322 y-1 w100 h60 , Gpu Layers
-Gui, Add, GroupBox, x322 y59 w100 h90, Cpu Threads
-Gui, Add, Edit, vCpuT x332 y95 w80 h25, 8
+Gui, Add, GroupBox, x322 y59 w100 h55, Cpu Threads
+Gui, Add, GroupBox, x322 y104 w100 h45, Context Length
+Gui, Add, Edit, vCCtl x332 y119 w80 h25, 4096
+Gui, Add, Edit, vCpuT x332 y77 w80 h25, 8
 Gui, Add, Edit, vGpuL x332 y19 w80 h20 , 33
 Gui, Add, GroupBox, x212 y149 w210 h70 , CmdLine Chat
 Gui, Add, Button, gRunCmd vD2 x232 y169 w170 h30 , Run
 Gui, Add, Text,cBlue vTopText x143 y235 w250 h30 +BackgroundTrans, 
 Gui, Add, Progress, x22 y250 w380 h20 cBlue vDownloadBar,100
 Gui, Add, Text,cBlack vBottomText x140 y255 w230 h30 +BackgroundTrans,
+Gui, Add, Text,cBlack vBracket1 x20 y255 w80 h30 +BackgroundTrans,|-------
+Gui, Add, Text,cBlack vBracket2 x382 y255 w80 h30 +BackgroundTrans,-------|
 Gui, Show, w429 h288,LLamaCPP-GUI
 StartupHideDLBar(TopText, BottomText, DownloadBar)
 if !FileExist("llama-cli.exe")
@@ -62,15 +66,16 @@ RunModel(Browser, Cmd)
  GuiControlGet, Mod,, Modd
  GuiControlGet, GPU,, GpuL
  GuiControlGet, CPU,, CpuT
+ GuiControlGet, Ctl,, CCtl
  if !FileExist(Mod)
      Download(Mod)
  if Browser = 1
     {
-     Run %comspec% /c llama-server.exe -m %Mod% -t %CPU% -c 4096 -ngl %GPU% --keep -1 --port 8080
+     Run %comspec% /c llama-server.exe --jinja -fa -m %Mod% -t %CPU% -c %Ctl% -ngl %GPU% --keep -1 --port 8080
      Run, http://127.0.0.1:8080
     }
  if Cmd = 1
-    RunWait %comspec% /c llama-cli.exe -m %Mod% -t %CPU% -i -c 4096 -ngl %GPU% --keep -1 --prompt %Prompt%
+    RunWait %comspec% /c llama-cli.exe -m %Mod% -t %CPU% -i -c %Ctl% -ngl %GPU% --keep -1 --prompt %Prompt%
 
 }
 
@@ -93,7 +98,6 @@ Download(Model)
         GuiControl,, TopText, Please wait while downloading
 	UrlDownloadToFile % URL, % A_WorkingDir . "\" . Model
 	SetTimer, uProgress, off
-        ;StartupHideDLBar(TopText, BottomText, DownloadBar)
         SetTimer, DynamicMemPercent, On
     
   uProgress:
